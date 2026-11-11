@@ -93,14 +93,16 @@
     .hero h1 span { color: var(--accent-blue); background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .hero .btn-primary { margin-top: 20px; }
 
-    /* ---------- BENTO GRID (3 КАРТИНКИ) ---------- */
+    /* ---------- BENTO GRID (3 КАРТИНКИ + 3 ТЕКСТА) ---------- */
     .bento-section { padding: 40px 0 60px; }
     .bento-grid { 
         display: grid; 
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr); /* 3 колонки */
         gap: 20px; 
-        height: 400px; 
+        grid-auto-rows: 250px; /* Высота строк */
     }
+    
+    /* Карточки с картинками */
     .bento-item { 
         border-radius: 4px; 
         overflow: hidden; 
@@ -112,6 +114,34 @@
     .bento-item:hover { border-color: var(--accent-cyan); box-shadow: 0 8px 30px rgba(0, 180, 216, 0.15); }
     .bento-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
     .bento-item:hover img { transform: scale(1.05); }
+
+    /* Карточки с текстом */
+    .bento-text {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: var(--bg-panel);
+        border: 1px solid var(--border-panel);
+        border-radius: 4px;
+        transition: 0.3s;
+    }
+    .bento-text:hover {
+        border-color: var(--accent-blue);
+        box-shadow: 0 8px 30px rgba(0, 59, 115, 0.1);
+    }
+    .bento-text h3 { 
+        font-size: 18px; 
+        color: var(--accent-blue); 
+        margin-bottom: 10px; 
+        font-family: var(--font-mono); 
+        text-transform: uppercase;
+    }
+    .bento-text p { 
+        font-size: 14px; 
+        color: var(--text-muted); 
+        line-height: 1.5;
+    }
 
     /* ---------- КАТАЛОГ (ОБРАЗЦЫ) ---------- */
     .catalog-section { padding: 60px 0 80px; }
@@ -191,7 +221,7 @@
     .team-role { color: var(--accent-orange); font-family: var(--font-mono); font-size: 12px; margin-top: 5px; }
 
     @media (max-width: 900px) {
-        .bento-grid { grid-template-columns: 1fr; height: auto; }
+        .bento-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
         .bento-item { height: 250px; }
         .footer-grid { grid-template-columns: 1fr; text-align: center; }
         .footer-contacts { text-align: center; }
@@ -226,9 +256,10 @@
     </section>
 
     <div class="container">
-        <!-- БЛОК С 3 КАРТИНКАМИ (БАННЕР) -->
+        <!-- БЛОК BENTO GRID (3 КАРТИНКИ + 3 ТЕКСТА) -->
         <section class="bento-section">
             <div class="bento-grid">
+                <!-- 1 РЯД: 3 КАРТИНКИ -->
                 <div class="bento-item">
                     <img src="1.jpg" alt="Баннер 1" onerror="this.src='https://placehold.co/800x600/e5e7eb/4b5563?text=IMAGE+1';">
                 </div>
@@ -238,10 +269,24 @@
                 <div class="bento-item">
                     <img src="3.jpg" alt="Баннер 3" onerror="this.src='https://placehold.co/800x600/e5e7eb/4b5563?text=IMAGE+3';">
                 </div>
+
+                <!-- 2 РЯД: 3 ТЕКСТОВЫХ БЛОКА -->
+                <div class="bento-text">
+                    <h3>// Ткани</h3>
+                    <p>Натуральный хлопок с высокой плотностью плетения. Проверено на устойчивость к агрессивным средам (сессии).</p>
+                </div>
+                <div class="bento-text">
+                    <h3>// Принты</h3>
+                    <p>Эксклюзивные графические решения. Созданы с использованием принципов золотого сечения и квантовой механики.</p>
+                </div>
+                <div class="bento-text">
+                    <h3>// Оптимизация</h3>
+                    <p>Прямые поставки снижают энтропию затрат. Стоимость вещей приятно удивляет даже технарей.</p>
+                </div>
             </div>
         </section>
 
-        <!-- БЛОК ОБРАЗЦЫ (ТОЛЬКО 4 ТОВАРА) -->
+        <!-- БЛОК ОБРАЗЦЫ (4 ТОВАРА) -->
         <section class="catalog-section">
             <h2 class="section-title">Образцы</h2>
             <p class="section-sub">// SELECTED SPECIMENS</p>
@@ -387,29 +432,29 @@
 
 <script>
 /* =========================================================
-   БАЗА ДАННЫХ (9 ТОВАРОВ, 4 ИЗ НИХ ПОПУЛЯРНЫЕ - featured)
+   БАЗА ДАННЫХ (9 ТОВАРОВ, 4 ПОПУЛЯРНЫХ)
    ========================================================= */
 const products = [
     { 
-        id: 1, category: 'одежда', title: 'Худи "Ядерный физик"', price: 3500, featured: true, // <-- ОСТАВЛЯЕМ НА ГЛАВНОЙ
+        id: 1, category: 'одежда', title: 'Худи "Ядерный физик"', price: 3500, featured: true,
         img: '1.jpg', 
         desc: 'Плотный футер, вышитый логотип. Создано для тех, кто не спит над курсовыми. Ткань: 100% хлопок, плотность 320 г/м².',
         spec: { material: 'Cotton 100%', density: '320 g/m²', thermal: '0.04 W/(m·K)' }
     },
     { 
-        id: 2, category: 'одежда', title: 'Футболка "E=mc²"', price: 1500, featured: true, // <-- ОСТАВЛЯЕМ НА ГЛАВНОЙ
+        id: 2, category: 'одежда', title: 'Футболка "E=mc²"', price: 1500, featured: true,
         img: '2.jpg', 
         desc: '100% хлопок, минималистичный дизайн. Классика, которая никогда не выйдет из моды. Ткань: хлопок 95%, эластан 5%.',
         spec: { material: 'Cotton 95% / Elastane 5%', density: '180 g/m²', weight: '150 g' }
     },
     { 
-        id: 3, category: 'аксессуары', title: 'Шопер "Ядерная физика"', price: 900, featured: true, // <-- ОСТАВЛЯЕМ НА ГЛАВНОЙ
+        id: 3, category: 'аксессуары', title: 'Шопер "Ядерная физика"', price: 900, featured: true,
         img: '3.jpg', 
         desc: 'Прочный шопер из плотного хлопка (Canvas). Вмещает ноутбук и пару учебников по физике. Максимальная нагрузка 15 кг.',
         spec: { material: 'Canvas', max_load: '15 kg', volume: '12 L' }
     },
     { 
-        id: 4, category: 'сувениры', title: 'Стикерпак "Студент МИФИ"', price: 300, featured: true, // <-- ОСТАВЛЯЕМ НА ГЛАВНОЙ
+        id: 4, category: 'сувениры', title: 'Стикерпак "Студент МИФИ"', price: 300, featured: true,
         img: '4.jpg', 
         desc: '10 виниловых наклеек с внутренними мемами и формулами. Водостойкие, устойчивы к ультрафиолету.',
         spec: { material: 'PVC', adhesive: 'Acrylic', UV_resist: 'Yes' }
@@ -461,7 +506,7 @@ function showPage(page) {
         home.classList.remove('hidden');
         catalog.classList.add('hidden');
         document.querySelector('.nav-link[data-page="home"]').classList.add('active');
-        renderFeatured(); // Вызываем рендер 4 товаров
+        renderFeatured();
     } else {
         home.classList.add('hidden');
         catalog.classList.remove('hidden');
@@ -474,7 +519,7 @@ function showPage(page) {
 // Рендер ТОЛЬКО 4 популярных товаров для главной
 function renderFeatured() {
     const grid = document.getElementById('featuredGrid');
-    const featuredProducts = products.filter(p => p.featured); // Фильтруем по флагу
+    const featuredProducts = products.filter(p => p.featured); 
     grid.innerHTML = featuredProducts.map(p => createCardHTML(p)).join('');
 }
 
@@ -579,7 +624,7 @@ window.onclick = function(e) { if (e.target.classList.contains('modal')) e.targe
    ИНИЦИАЛИЗАЦИЯ
    ========================================================= */
 window.onload = () => {
-    renderFeatured(); // При загрузке рисуем 4 образца
+    renderFeatured();
     if (!document.getElementById('pageCatalog').classList.contains('hidden')) {
         renderCatalog('all');
     }
