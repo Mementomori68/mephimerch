@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>МИФИ МЕРЧ // SCIENTIFIC LAB INTERFACE</title>
+<style>
+    /* ---------- ПЕРЕМЕННЫЕ И СБРОС (СВЕТЛАЯ ТЕМА) ---------- */
+    :root {
+        --bg-main: #f8f9fa;
+        --bg-panel: #ffffff;
+        --text-main: #111827;
+        --text-muted: #4b5563;
+        --accent-blue: #003b73;
+        --accent-cyan: #00b4d8;
+        --accent-orange: #ff6a00;
+        --border-grid: rgba(0, 59, 115, 0.08);
+        --border-panel: #d1d5db;
+        --font-mono: 'Courier New', 'Consolas', monospace;
+        --font-sans: 'Segoe UI', system-ui, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+        background-color: var(--bg-main);
+        background-image: 
+            linear-gradient(var(--border-grid) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border-grid) 1px, transparent 1px);
+        background-size: 40px 40px;
+        color: var(--text-main);
+        font-family: var(--font-sans);
+        line-height: 1.6;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* ---------- МАТЕМАТИЧЕСКИЕ ФОРМУЛЫ НА ФОНЕ ---------- */
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -1;
+        opacity: 0.12; 
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='%23003b73' font-family='monospace' font-size='24'%3E%3Ctext x='20' y='60'%3E∫ E·dA = Q/ε₀%3C/text%3E%3Ctext x='350' y='120'%3E∇ × B = μ₀J%3C/text%3E%3Ctext x='80' y='220'%3EΣ ħω/2%3C/text%3E%3Ctext x='400' y='280'%3Eiħ ∂ψ/∂t%3C/text%3E%3Ctext x='40' y='380'%3Ee^{iπ} + 1 = 0%3C/text%3E%3Ctext x='300' y='480'%3EΔx Δp ≥ ħ/2%3C/text%3E%3Ctext x='150' y='550'%3Eπ ≈ 3.14159%3C/text%3E%3C/g%3E%3C/svg%3E");
+        background-repeat: repeat;
+        background-size: 600px 600px;
+        pointer-events: none;
+        animation: moveFormulas 60s linear infinite;
+    }
+    @keyframes moveFormulas { 100% { background-position: 600px 600px; } }
+
+    /* ---------- УТИЛИТЫ ---------- */
+    .hidden { display: none !important; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .section-title { font-size: 32px; font-weight: 800; letter-spacing: 1px; color: var(--accent-blue); margin-bottom: 10px; text-align: center; text-transform: uppercase; }
+    .section-sub { font-family: var(--font-mono); font-size: 14px; color: var(--accent-orange); margin-bottom: 40px; text-align: center; font-weight: bold; }
+    
+    .btn-primary {
+        background: var(--accent-blue); color: #fff; font-family: var(--font-mono);
+        font-weight: 700; padding: 14px 40px; border: none; text-transform: uppercase;
+        letter-spacing: 1px; cursor: pointer; transition: 0.3s; border-radius: 2px;
+    }
+    .btn-primary:hover { background: var(--accent-orange); box-shadow: 0 4px 15px rgba(255,106,0,0.4); }
+
+    /* ---------- ШАПКА ---------- */
+    header {
+        background: rgba(248, 249, 250, 0.95); backdrop-filter: blur(10px);
+        border-bottom: 2px solid var(--accent-blue); padding: 15px 40px;
+        display: flex; justify-content: space-between; align-items: center;
+        position: sticky; top: 0; z-index: 200;
+    }
+    .logo-area { display: flex; align-items: center; gap: 20px; }
+    .logo { font-family: var(--font-mono); font-size: 24px; font-weight: 900; cursor: pointer; color: var(--accent-blue); }
+    .logo span { color: var(--accent-orange); }
+    
+    .sys-status {
+        font-family: var(--font-mono); font-size: 11px; color: #059669;
+        border: 1px solid #059669; padding: 4px 10px; border-radius: 20px;
+        display: flex; align-items: center; gap: 6px; background: #ecfdf5;
+    }
+    .sys-status::before { content: "●"; animation: blink 2s infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    nav { display: flex; gap: 25px; align-items: center; }
+    .nav-link { background: none; border: none; color: var(--text-main); font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: 0.3s; font-family: var(--font-mono); }
+    .nav-link:hover, .nav-link.active { color: var(--accent-orange); }
+    .cart-btn { background: #fff; border: 2px solid var(--accent-blue); color: var(--accent-blue); padding: 8px 20px; font-family: var(--font-mono); font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .cart-btn:hover { background: var(--accent-blue); color: #fff; }
+
+    /* ---------- ГЛАВНЫЙ ЭКРАН ---------- */
+    .hero { padding: 100px 20px 60px; text-align: center; }
+    .hero h1 { font-size: 56px; font-weight: 900; letter-spacing: -1px; color: var(--text-main); margin-bottom: 20px; text-transform: uppercase; }
+    .hero h1 span { color: var(--accent-blue); background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero .btn-primary { margin-top: 20px; }
+
+    /* ---------- BENTO GRID (3 КАРТИНКИ) ---------- */
+    .bento-section { padding: 40px 0 60px; }
+    .bento-grid { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px; 
+        height: 400px; 
+    }
+    .bento-item { 
+        border-radius: 4px; 
+        overflow: hidden; 
+        position: relative; 
+        background-color: var(--bg-panel); 
+        border: 1px solid var(--border-panel); 
+        transition: 0.3s;
+    }
+    .bento-item:hover { border-color: var(--accent-cyan); box-shadow: 0 8px 30px rgba(0, 180, 216, 0.15); }
+    .bento-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+    .bento-item:hover img { transform: scale(1.05); }
+
+    /* ---------- КАТАЛОГ (ОБРАЗЦЫ) ---------- */
+    .catalog-section { padding: 60px 0 80px; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
+    .product-card { background: var(--bg-panel); border: 1px solid var(--border-panel); padding: 20px; display: flex; flex-direction: column; transition: 0.3s; cursor: pointer; position: relative; border-radius: 4px; }
+    .product-card:hover { border-color: var(--accent-cyan); box-shadow: 0 8px 30px rgba(0, 180, 216, 0.15); }
+    
+    .product-img-wrapper { height: 220px; background: #e5e7eb; border-radius: 2px; margin-bottom: 15px; position: relative; overflow: hidden; }
+    .product-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+    .product-card:hover .product-img-wrapper img { transform: scale(1.1); filter: blur(2px); }
+
+    /* ТЕХНИЧЕСКИЙ ПАСПОРТ ПРИ НАВЕДЕНИИ */
+    .tech-spec-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(3px);
+        padding: 15px; display: flex; flex-direction: column; justify-content: center;
+        opacity: 0; transition: 0.3s; font-family: var(--font-mono); font-size: 12px; color: var(--accent-blue);
+        border: 2px dashed var(--accent-cyan); box-sizing: border-box;
+    }
+    .product-card:hover .tech-spec-overlay { opacity: 1; }
+    .tech-spec-overlay span { display: block; border-bottom: 1px solid var(--border-grid); padding: 4px 0; }
+    .tech-spec-overlay span:last-child { border-bottom: none; }
+    .spec-val { font-weight: bold; color: var(--accent-orange); float: right; }
+
+    .product-title { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
+    .product-price { font-family: var(--font-mono); font-size: 20px; color: var(--accent-blue); font-weight: 900; margin-bottom: 15px; }
+    .product-btn { margin-top: auto; background: var(--bg-main); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 10px; font-family: var(--font-mono); font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+    .product-btn:hover { background: var(--accent-blue); color: #fff; }
+
+    /* ---------- ОТЗЫВЫ ---------- */
+    .reviews-section { padding: 80px 0; background: var(--bg-panel); border-top: 1px solid var(--border-panel); border-bottom: 1px solid var(--border-panel); }
+    .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center; }
+    .review-avatar { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 20px; object-fit: cover; border: 3px solid var(--accent-blue); background: #eee; }
+    .review-name { font-size: 18px; font-weight: bold; color: var(--accent-blue); margin-bottom: 10px; font-family: var(--font-mono); }
+    .review-text { font-size: 15px; color: var(--text-muted); }
+
+    /* ---------- ДОСТАВКА ---------- */
+    .delivery-section { padding: 80px 0; text-align: center; }
+    .delivery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 50px; }
+    .delivery-item { background: var(--bg-panel); padding: 30px; border: 1px solid var(--border-panel); border-radius: 4px; }
+    .delivery-item h3 { font-size: 18px; margin: 20px 0 10px; color: var(--accent-blue); font-family: var(--font-mono); }
+    .delivery-icon { font-size: 40px; height: 50px; display: flex; align-items: center; justify-content: center; color: var(--accent-cyan); }
+
+    /* ---------- ПОДВАЛ ---------- */
+    footer { background: #000; color: #fff; padding: 60px 20px 30px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 40px; max-width: 1200px; margin: 0 auto; }
+    .footer-logo { font-family: var(--font-mono); font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 20px; }
+    .footer-logo span { color: var(--accent-cyan); }
+    .footer-desc { color: #9ca3af; font-size: 14px; max-width: 300px; }
+    .footer-links h4 { font-size: 16px; margin-bottom: 20px; color: #fff; font-family: var(--font-mono); text-transform: uppercase; }
+    .footer-links ul { list-style: none; }
+    .footer-links li { margin-bottom: 10px; }
+    .footer-links a { color: #9ca3af; text-decoration: none; font-size: 14px; transition: 0.3s; }
+    .footer-links a:hover { color: var(--accent-cyan); }
+    .footer-contacts { text-align: right; }
+    .footer-contacts p { font-size: 20px; font-weight: bold; margin-bottom: 10px; font-family: var(--font-mono); }
+    .footer-contacts a { color: #fff; text-decoration: none; font-size: 16px; }
+    .copyright { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #333; color: #6b7280; font-size: 13px; font-family: var(--font-mono); }
+
+    /* ---------- МОДАЛЬНЫЕ ОКНА ---------- */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(248, 249, 250, 0.9); backdrop-filter: blur(8px); z-index: 500; justify-content: center; align-items: center; }
+    .modal.active { display: flex; }
+    .modal-box { background: #fff; border: 1px solid var(--accent-blue); padding: 30px; width: 500px; max-width: 90%; border-radius: 4px; box-shadow: 0 25px 50px rgba(0,0,0,0.1); position: relative; }
+    .modal-close { position: absolute; top: 15px; right: 20px; background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; z-index: 10; }
+    
+    .modal-img { width: 100%; height: 250px; object-fit: cover; border-radius: 2px; margin-bottom: 20px; background: #eee; }
+    .modal-title { font-size: 22px; font-weight: bold; color: var(--accent-blue); margin-bottom: 10px; font-family: var(--font-mono); }
+    .modal-body { font-size: 15px; color: var(--text-muted); margin-bottom: 20px; }
+    .modal-price { font-family: var(--font-mono); color: var(--accent-orange); font-size: 26px; font-weight: bold; margin-bottom: 30px; }
+    
+    .cart-item-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border-panel); font-size: 15px; font-family: var(--font-mono); }
+    .cart-total-row { font-family: var(--font-mono); font-size: 22px; color: var(--accent-blue); text-align: right; margin-top: 20px; font-weight: bold; }
+    
+    .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+    .team-member { background: var(--bg-main); padding: 15px; border-left: 3px solid var(--accent-blue); }
+    .team-name { color: var(--text-main); font-weight: bold; }
+    .team-role { color: var(--accent-orange); font-family: var(--font-mono); font-size: 12px; margin-top: 5px; }
+
+    @media (max-width: 900px) {
+        .bento-grid { grid-template-columns: 1fr; height: auto; }
+        .bento-item { height: 250px; }
+        .footer-grid { grid-template-columns: 1fr; text-align: center; }
+        .footer-contacts { text-align: center; }
+        .hero h1 { font-size: 40px; }
+        .reviews-grid, .delivery-grid { grid-template-columns: 1fr; }
+        header { flex-direction: column; gap: 15px; }
+        .sys-status { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ================= ШАПКА ================= -->
+<header>
+    <div class="logo-area">
+        <div class="logo" onclick="showPage('home')">МИФИ <span>МЕРЧ</span></div>
+        <div class="sys-status">SYS.LAB: ONLINE | REACTOR: STABLE</div>
+    </div>
+    <nav>
+        <button class="nav-link active" data-page="home" onclick="showPage('home')">Главная</button>
+        <button class="nav-link" data-page="catalog" onclick="showPage('catalog')">Каталог</button>
+        <button class="nav-link" onclick="openModal('teamModal')">Команда</button>
+        <button class="cart-btn" onclick="openModal('cartModal')">БУФЕР (<span id="cartCount">0</span>)</button>
+    </nav>
+</header>
+
+<!-- ================= ГЛАВНАЯ СТРАНИЦА ================= -->
+<main id="pageHome">
+    <section class="hero">
+        <h1>Фундаментальный <span>Мерч</span></h1>
+        <button class="btn-primary" onclick="showPage('catalog')">Запросить образцы</button>
+    </section>
+
+    <div class="container">
+        <!-- БЛОК С 3 КАРТИНКАМИ (БАННЕР) -->
+        <section class="bento-section">
+            <div class="bento-grid">
+                <div class="bento-item">
+                    <img src="1.jpg" alt="Баннер 1" onerror="this.src='https://placehold.co/800x600/e5e7eb/4b5563?text=IMAGE+1';">
+                </div>
+                <div class="bento-item">
+                    <img src="2.jpg" alt="Баннер 2" onerror="this.src='https://placehold.co/800x600/e5e7eb/4b5563?text=IMAGE+2';">
+                </div>
+                <div class="bento-item">
+                    <img src="3.jpg" alt="Баннер 3" onerror="this.src='https://placehold.co/800x600/e5e7eb/4b5563?text=IMAGE+3';">
+                </div>
+            </div>
+        </section>
+
+        <!-- БЛОК ОБРАЗЦЫ (ТОЛЬКО 4 ТОВАРА) -->
+        <section class="catalog-section">
+            <h2 class="section-title">Образцы</h2>
+            <p class="section-sub">// SELECTED SPECIMENS</p>
+            <div class="product-grid" id="featuredGrid"></div>
+        </section>
+    </div>
+
+    <!-- ОТЗЫВЫ -->
+    <section class="reviews-section">
+        <div class="container">
+            <h2 class="section-title">Логи испытаний</h2>
+            <p class="section-sub">// USER FEEDBACK DATA</p>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-avatar"></div>
+                    <div class="review-name">Вероника</div>
+                    <p class="review-text">Отличная футболка! Спасибо большое магазину МИФИ. Качество супер.</p>
+                </div>
+                <div class="review-card">
+                    <div class="review-avatar"></div>
+                    <div class="review-name">Федор Базолин</div>
+                    <p class="review-text">Очень люблю этот бренд. Всем друзьям советую. Качественный дизайн.</p>
+                </div>
+                <div class="review-card">
+                    <div class="review-avatar"></div>
+                    <div class="review-name">Пол</div>
+                    <p class="review-text">Спасибо за толстовку с любимым университетом. Ношу не снимая!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ДОСТАВКА -->
+    <section class="delivery-section container">
+        <h2 class="section-title">Транспортировка</h2>
+        <p class="section-sub">// DELIVERY PROTOCOLS</p>
+        <div class="delivery-grid">
+            <div class="delivery-item">
+                <div class="delivery-icon">🛍️</div>
+                <h3>САМОВЫВОЗ</h3>
+                <p>Из офиса на метро Павелецкая<br>по будням с 11:30 до 19:30</p>
+            </div>
+            <div class="delivery-item">
+                <div class="delivery-icon">🚚</div>
+                <h3>КУРЬЕР</h3>
+                <p>От 500 рублей до порога дома<br>срок доставки 1-2 дня</p>
+            </div>
+            <div class="delivery-item">
+                <div class="delivery-icon" style="font-family: var(--font-mono); font-weight:900; font-size: 30px; letter-spacing:1px;">CDEK</div>
+                <h3>ПУНКТ СДЭК</h3>
+                <p>от 200 рублей в любой пункт<br>срок доставки 2-3 дня</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- ================= СТРАНИЦА КАТАЛОГА ================= -->
+<main id="pageCatalog" class="hidden">
+    <div class="container catalog-section">
+        <h2 class="section-title">Реестр образцов</h2>
+        <p class="section-sub">// FULL INVENTORY</p>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all" onclick="filterCatalog('all', this)">ВСЕ</button>
+            <button class="filter-btn" data-filter="одежда" onclick="filterCatalog('одежда', this)">ОДЕЖДА</button>
+            <button class="filter-btn" data-filter="аксессуары" onclick="filterCatalog('аксессуары', this)">АКСЕССУАРЫ</button>
+            <button class="filter-btn" data-filter="сувениры" onclick="filterCatalog('сувениры', this)">СУВЕНИРЫ</button>
+        </div>
+
+        <div class="product-grid" id="catalogGrid"></div>
+    </div>
+</main>
+
+<!-- ================= ПОДВАЛ ================= -->
+<footer>
+    <div class="footer-grid">
+        <div>
+            <div class="footer-logo">МИФИ <span>МЕРЧ</span></div>
+            <p class="footer-desc">Сувенирная продукция Национального исследовательского ядерного университета «МИФИ». Официальный магазин.</p>
+        </div>
+        <div class="footer-links">
+            <h4>Магазин</h4>
+            <ul>
+                <li><a href="#" onclick="showPage('home')">Главная</a></li>
+                <li><a href="#" onclick="showPage('catalog')">Каталог</a></li>
+                <li><a href="#">О магазине</a></li>
+            </ul>
+        </div>
+        <div class="footer-links">
+            <h4>Информация</h4>
+            <ul>
+                <li><a href="#">Опт и сотрудничество</a></li>
+                <li><a href="#">Товарный знак МИФИ</a></li>
+                <li><a href="#">Блог</a></li>
+            </ul>
+        </div>
+        <div class="footer-contacts">
+            <p>+7 (495) 788-56-99</p>
+            <a href="mailto:merch@mephi.ru">merch@mephi.ru</a>
+        </div>
+    </div>
+    <div class="copyright">
+        © 2024 НИЯУ МИФИ МЕРЧ // SCIENTIFIC LAB INTERFACE // MVP-МАКЕТ
+    </div>
+</footer>
+
+<!-- ================= МОДАЛЬНЫЕ ОКНА ================= -->
+<div class="modal" id="productModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('productModal')">✕</button>
+        <img id="modalProductImg" class="modal-img" src="" alt="Фото товара" onerror="this.src='https://placehold.co/400x250/e5e7eb/4b5563?text=NO+IMAGE';">
+        <h3 class="modal-title" id="modalProductTitle">Образец</h3>
+        <div class="modal-body" id="modalProductDesc"></div>
+        <div class="modal-price" id="modalProductPrice"></div>
+        <button class="btn-primary" style="width:100%; border-radius:2px;" id="modalAddBtn">Синтезировать (В корзину)</button>
+    </div>
+</div>
+
+<div class="modal" id="cartModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('cartModal')">✕</button>
+        <h3 class="modal-title">Буфер обмена</h3>
+        <div id="cartItems"></div>
+        <div class="cart-total-row" id="cartTotal">Итого: 0 ₽</div>
+        <button class="btn-primary" style="width:100%; margin-top:20px; border-radius:2px;" onclick="checkout()">Инициировать оплату</button>
+    </div>
+</div>
+
+<div class="modal" id="teamModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('teamModal')">✕</button>
+        <h3 class="modal-title">Научная группа</h3>
+        <div class="team-grid">
+            <div class="team-member"><div class="team-name">Алексей Смирнов</div><div class="team-role">Lead PM</div></div>
+            <div class="team-member"><div class="team-name">Мария Иванова</div><div class="team-role">R&D Designer</div></div>
+            <div class="team-member"><div class="team-name">Дмитрий Козлов</div><div class="team-role">Frontend Dev</div></div>
+            <div class="team-member"><div class="team-name">Екатерина Волкова</div><div class="team-role">Data Analyst</div></div>
+            <div class="team-member"><div class="team-name">Иван Петров</div><div class="team-role">QA Engineer</div></div>
+            <div class="team-member" style="border-left-color: var(--accent-cyan);"><div class="team-name">Ты?</div><div class="team-role">Vacancy</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* =========================================================
+   БАЗА ДАННЫХ (9 ТОВАРОВ, 4 ИЗ НИХ ПОПУЛЯРНЫЕ - featured)
+   ========================================================= */
+const products = [
+    { 
+        id: 1, category: 'одежда', title: 'Худи "Ядерный физик"', price: 3500, featured: true, // <-- ОСТАВЛЯЕМ НА ГЛАВНОЙ
+        img: '1.jpg', 
+        desc: 'Плотный футер, вышитый логотип. Создано для тех, кто не спит над курсовыми. Ткань: 100% хлопок, плотность 320 г/м².',
+        spec: { material: 'Cotton 100%', density: '320 g/m²', thermal: '0.04 W/(m·K)' }
+    },
+    { 
+        id: 2, category: 'одежда', title: 'Футболка "E=mc²"', price: 1500, featured: true, // <-- ОСТАВЛЯЕМ НА ГЛАВНОЙ
+        img: '2.jpg', 
+        desc: '100% хлопок, минималистичный дизайн. Классика, которая никогда не выйдет из моды. Ткань: хлопок 95%, эластан 5%.',
+        spec: { material: 'Cotton 95% / Elastane 5%', density: '180 g/m²', weight: '150 g' }
+    },
+    { 
+        id: 3, category: 'аксессуары', title: 'Шопер "Ядерная физика"', price: 900, featured: true, // <-- ОСТАВЛЯЕМ НА ГЛАВНОЙ
+        img: '3.jpg', 
+        desc: 'Прочный шопер из плотного хлопка (Canvas). Вмещает ноутбук и пару учебников по физике. Максимальная нагрузка 15 кг.',
+        spec: { material: 'Canvas', max_load: '15 kg', volume: '12 L' }
+    },
+    { 
+        id: 4, category: 'сувениры', title: 'Стикерпак "Студент МИФИ"', price: 300, featured: true, // <-- ОСТАВЛЯЕМ НА ГЛАВНОЙ
+        img: '4.jpg', 
+        desc: '10 виниловых наклеек с внутренними мемами и формулами. Водостойкие, устойчивы к ультрафиолету.',
+        spec: { material: 'PVC', adhesive: 'Acrylic', UV_resist: 'Yes' }
+    },
+    { 
+        id: 5, category: 'одежда', title: 'Свитшот "Дорогу осилит идущий"', price: 3800, featured: false, 
+        img: '5.jpg', 
+        desc: 'Коллекция для выпускников. Мягкий футер с начесом, принт на спине. Ткань: 80% хлопок, 20% полиэстер.',
+        spec: { material: 'Cotton 80% / Poly 20%', density: '280 g/m²', insulation: 'High' }
+    },
+    { 
+        id: 6, category: 'одежда', title: 'Бомбер "МИФИ"', price: 5200, featured: false, 
+        img: '6.jpg', 
+        desc: 'Стильный бомбер с вышивкой. Защита от ветра и дождя. Ткань: нейлон с водоотталкивающей пропиткой.',
+        spec: { material: 'Nylon', water_resist: '5000 mm', windproof: 'Yes' }
+    },
+    { 
+        id: 7, category: 'аксессуары', title: 'Рюкзак "МИФИ"', price: 4500, featured: false, 
+        img: '7.jpg', 
+        desc: 'Городской рюкзак с отделением для ноутбука. Водоотталкивающая ткань (полиэстер 600D). Объем 20 литров.',
+        spec: { material: 'Polyester 600D', volume: '20 L', laptop: 'up to 15"' }
+    },
+    { 
+        id: 8, category: 'аксессуары', title: 'Термокружка "Не спи"', price: 1200, featured: false, 
+        img: '8.jpg', 
+        desc: 'Держит тепло 8 часов. Специальное покрытие для долгих сессий. Нержавеющая сталь 304.',
+        spec: { material: 'Steel 304', heat_retention: '8 hours', volume: '450 ml' }
+    },
+    { 
+        id: 9, category: 'сувениры', title: 'Брелок "Атом"', price: 400, featured: false, 
+        img: '9.jpg', 
+        desc: 'Металлический брелок в виде модели атома. Светится в темноте. Отличный подарок для физика.',
+        spec: { material: 'Metal / Luminous', size: '5 cm', weight: '20 g' }
+    }
+];
+
+let cart = [];
+let total = 0;
+
+/* =========================================================
+   ОТОБРАЖЕНИЕ
+   ========================================================= */
+function showPage(page) {
+    const home = document.getElementById('pageHome');
+    const catalog = document.getElementById('pageCatalog');
+    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+
+    if (page === 'home') {
+        home.classList.remove('hidden');
+        catalog.classList.add('hidden');
+        document.querySelector('.nav-link[data-page="home"]').classList.add('active');
+        renderFeatured(); // Вызываем рендер 4 товаров
+    } else {
+        home.classList.add('hidden');
+        catalog.classList.remove('hidden');
+        document.querySelector('.nav-link[data-page="catalog"]').classList.add('active');
+        renderCatalog('all');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Рендер ТОЛЬКО 4 популярных товаров для главной
+function renderFeatured() {
+    const grid = document.getElementById('featuredGrid');
+    const featuredProducts = products.filter(p => p.featured); // Фильтруем по флагу
+    grid.innerHTML = featuredProducts.map(p => createCardHTML(p)).join('');
+}
+
+function renderCatalog(filter = 'all') {
+    const grid = document.getElementById('catalogGrid');
+    let list = products;
+    if (filter !== 'all') list = products.filter(p => p.category === filter);
+    grid.innerHTML = list.map(p => createCardHTML(p)).join('');
+}
+
+function filterCatalog(category, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCatalog(category);
+}
+
+/* КАРТОЧКА ТОВАРА */
+function createCardHTML(product) {
+    let specHtml = '';
+    if (product.spec) {
+        for (const [key, value] of Object.entries(product.spec)) {
+            specHtml += `<span>${key.toUpperCase()}: <span class="spec-val">${value}</span></span>`;
+        }
+    }
+
+    return `
+        <div class="product-card" onclick="openProductModal(${product.id})">
+            <div class="product-img-wrapper">
+                <img src="${product.img}" alt="${product.title}" onerror="this.onerror=null; this.src='https://placehold.co/400x400/e5e7eb/4b5563?text=NO+IMAGE';">
+                <div class="tech-spec-overlay">
+                    <div style="font-weight:bold; margin-bottom:8px; border-bottom:2px solid var(--accent-blue); padding-bottom:4px;">// SPEC.DATA</div>
+                    ${specHtml}
+                </div>
+            </div>
+            <div class="product-title">${product.title}</div>
+            <div class="product-price">${product.price.toLocaleString()} ₽</div>
+            <button class="product-btn" onclick="event.stopPropagation(); addToCart(${product.id})">Синтезировать</button>
+        </div>
+    `;
+}
+
+/* =========================================================
+   МОДАЛЬНЫЕ ОКНА И КОРЗИНА
+   ========================================================= */
+function openProductModal(id) {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    document.getElementById('modalProductImg').src = product.img;
+    document.getElementById('modalProductTitle').textContent = product.title;
+    document.getElementById('modalProductDesc').textContent = product.desc;
+    document.getElementById('modalProductPrice').textContent = product.price.toLocaleString() + ' ₽';
+
+    const addBtn = document.getElementById('modalAddBtn');
+    addBtn.onclick = () => {
+        addToCart(id);
+        closeModal('productModal');
+    };
+    openModal('productModal');
+}
+
+function addToCart(id) {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    cart.push(product);
+    total += product.price;
+    updateCartUI();
+}
+
+function updateCartUI() {
+    document.getElementById('cartCount').textContent = cart.length;
+    document.getElementById('cartTotal').textContent = `Итого: ${total.toLocaleString()} ₽`;
+
+    const container = document.getElementById('cartItems');
+    if (cart.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-family: var(--font-mono);">Буфер пуст</p>';
+        return;
+    }
+    container.innerHTML = cart.map(item => `
+        <div class="cart-item-row">
+            <span>${item.title}</span>
+            <span>${item.price.toLocaleString()} ₽</span>
+        </div>
+    `).join('');
+}
+
+function checkout() {
+    if (cart.length === 0) return alert('Буфер пуст!');
+    alert('Это MVP-макет! В реальной версии здесь произошел бы переход на платежный шлюз.');
+    cart = [];
+    total = 0;
+    updateCartUI();
+    closeModal('cartModal');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.classList.remove('active'); };
+
+/* =========================================================
+   ИНИЦИАЛИЗАЦИЯ
+   ========================================================= */
+window.onload = () => {
+    renderFeatured(); // При загрузке рисуем 4 образца
+    if (!document.getElementById('pageCatalog').classList.contains('hidden')) {
+        renderCatalog('all');
+    }
+};
+</script>
+</body>
+</html>
